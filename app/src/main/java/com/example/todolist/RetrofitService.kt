@@ -21,4 +21,15 @@ interface RetrofitService {
         @HeaderMap headers: Map<String, String>,
         @FieldMap params: HashMap<String, Any>
     ): Call<Any>
+
+    @GET("to-do/")
+    fun getToDoList(
+        @HeaderMap headers: Map<String, String>,
+    ): Call<ArrayList<ToDo>>
+
+    @PUT("to-do/complete/{todoId}")
+    fun changeToDoComplete(
+        @HeaderMap headers: Map<String, String>,
+        @Path("todoId") todoId: Int
+    ): Call<Any>
 }

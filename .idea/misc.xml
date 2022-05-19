@@ -9,6 +9,8 @@
         <entry key="..\:/Users/sudon/AndroidStudioProjects/ToDoList/app/src/main/res/drawable/todo_bg.xml" value="0.237" />
         <entry key="..\:/Users/sudon/AndroidStudioProjects/ToDoList/app/src/main/res/layout/activity_to_do_write.xml" value="0.25" />
         <entry key="..\:/Users/sudon/AndroidStudioProjects/ToDoList/app/src/main/res/layout/activity_todo.xml" value="0.23072916666666668" />
+        <entry key="..\:/Users/sudon/AndroidStudioProjects/ToDoList/app/src/main/res/layout/todo_content.xml" value="0.22" />
+        <entry key="..\:/Users/sudon/AndroidStudioProjects/ToDoList/app/src/main/res/layout/todo_date.xml" value="0.5" />
       </map>
     </option>
   </component>
