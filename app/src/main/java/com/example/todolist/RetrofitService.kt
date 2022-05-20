@@ -12,6 +12,12 @@ class ToDo(
 
 interface RetrofitService {
 
+    @GET("to-do/search/")
+    fun searchToDoList(
+        @Query("keyword") keyword: String,
+        @HeaderMap headers: Map<String, String>
+    ): Call<ArrayList<ToDo>>
+
     @POST("to-do/")
     @FormUrlEncoded
     fun makeToDo(

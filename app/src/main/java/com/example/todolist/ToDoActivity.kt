@@ -9,9 +9,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.view.menu.ActionMenuItemView
+import androidx.core.widget.doAfterTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.load.engine.Resource
@@ -32,9 +34,45 @@ class ToDoActivity : AppCompatActivity() {
         }
         todoRecyclerView = findViewById(R.id.todo_list)
         getToDoList()
+        findViewById<EditText>(R.id.search_edittext).doAfterTextChanged {
+            searchToDoList(it.toString())
+        }
     }
 
-    fun changeToDoComplete(todoId: Int) {
+    fun searchToDoList(keyword: String) {
+        val retrofit = Retrofit.Builder()
+            .baseUrl("http://mellowcode.org/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        val retrofitService = retrofit.create(RetrofitService::class.java)
+
+        val header = HashMap<String, String>()
+        header["Authorization"] = "token " + "d29cb15006f4e4aa65ccce8be01b4c9a48541abd"
+        retrofitService.searchToDoList(keyword, header).enqueue(object : Callback<ArrayList<ToDo>> {
+            override fun onResponse(
+                call: Call<ArrayList<ToDo>>,
+                response: Response<ArrayList<ToDo>>
+            ) {
+                if (response.isSuccessful) {
+                    val todoList = response.body()
+                    makeToDoList(todoList!!)
+                }
+            }
+
+            override fun onFailure(call: Call<ArrayList<ToDo>>, t: Throwable) {
+            }
+        })
+    }
+
+    fun makeToDoList(todoList: ArrayList<ToDo>) {
+        todoRecyclerView.adapter = ToDoListRecyclerViewAdapter(
+            todoList!!,
+            LayoutInflater.from(this@ToDoActivity),
+            this@ToDoActivity
+        )
+    }
+
+    fun changeToDoComplete(todoId: Int, activity: ToDoActivity) {
         val retrofit = Retrofit.Builder()
             .baseUrl("http://mellowcode.org/")
             .addConverterFactory(GsonConverterFactory.create())
@@ -44,11 +82,17 @@ class ToDoActivity : AppCompatActivity() {
         val header = HashMap<String, String>()
         header["Authorization"] = "token " + "d29cb15006f4e4aa65ccce8be01b4c9a48541abd"
 
-        retrofitService.changeToDoComplete(header, todoId).enqueue(object : Callback<Any>{
+        retrofitService.changeToDoComplete(header, todoId).enqueue(object : Callback<Any> {
             override fun onResponse(call: Call<Any>, response: Response<Any>) {
+                // 서버에서는 요청을 받아서 순서대로 바로바로 처리하는 것이 아니라
+                // 동시에 여러 요청을 처리할 때가 있다. 따라서 onClickListener 에서 getToDoList() 요청을
+                // 바로 보내버리면 올바른 응답이 오지 않을 가능성이 있다. 따라서 change 가 완료된 후에
+                // List 를 다시 받는 것으로 한다.
+                activity.getToDoList()
             }
 
             override fun onFailure(call: Call<Any>, t: Throwable) {
+                activity.getToDoList()
             }
         })
     }
@@ -71,11 +115,7 @@ class ToDoActivity : AppCompatActivity() {
             ) {
                 if (response.isSuccessful) {
                     val todoList = response.body()
-                    todoRecyclerView.adapter = ToDoListRecyclerViewAdapter(
-                        todoList!!,
-                        LayoutInflater.from(this@ToDoActivity),
-                        this@ToDoActivity
-                    )
+                    makeToDoList(todoList!!)
                 }
             }
 
@@ -110,7 +150,7 @@ class ToDoListRecyclerViewAdapter(
             content = itemView.findViewById(R.id.content)
             isComplete = itemView.findViewById(R.id.is_complete)
             isComplete.setOnClickListener {
-                activity.changeToDoComplete(todoList[adapterPosition].id)
+                activity.changeToDoComplete(todoList[adapterPosition].id, activity)
             }
         }
     }
